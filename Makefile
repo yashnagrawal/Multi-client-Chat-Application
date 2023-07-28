@@ -1,28 +1,33 @@
 CC = gcc
 CFLAGS = -pthread
+SRC_DIR = src
+INCLUDE_DIR = include
+BIN_DIR = bin
 
-all: main
+all: $(BIN_DIR)/main
 
-main: main.o server.o server_utils.o client.o client_utils.o utils.o
-	$(CC) $(CFLAGS) -o main main.o server.o server_utils.o client.o client_utils.o utils.o
+$(BIN_DIR)/main: $(BIN_DIR)/main.o $(BIN_DIR)/server/server.o $(BIN_DIR)/server/server_utils.o $(BIN_DIR)/client/client.o $(BIN_DIR)/client/client_utils.o $(BIN_DIR)/utils.o
+	$(CC) $(CFLAGS) -o $@ $^
 
-main.o: main.c
-	$(CC) $(CFLAGS) -c main.c
+$(BIN_DIR)/main.o: $(SRC_DIR)/main.c
+	$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -c $< -o $@
 
-server.o: server.c
-	$(CC) $(CFLAGS) -c server.c
+$(BIN_DIR)/server/server.o: $(SRC_DIR)/server/server.c
+	$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -c $< -o $@
 
-client.o: client.c
-	$(CC) $(CFLAGS) -c client.c
+$(BIN_DIR)/client/client.o: $(SRC_DIR)/client/client.c
+	$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -c $< -o $@
 
-server_utils.o: server_utils.c
-	$(CC) $(CFLAGS) -c server_utils.c
+$(BIN_DIR)/server/server_utils.o: $(SRC_DIR)/server/server_utils.c
+	$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -c $< -o $@
 
-client_utils.o: client_utils.c
-	$(CC) $(CFLAGS) -c client_utils.c
+$(BIN_DIR)/client/client_utils.o: $(SRC_DIR)/client/client_utils.c
+	$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -c $< -o $@
 
-utils.o: utils.c
-	$(CC) $(CFLAGS) -c utils.c
+$(BIN_DIR)/utils.o: $(SRC_DIR)/utils.c
+	$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -c $< -o $@
 
 clean:
-	rm -f main main.o server.o server_utils.o client.o client_utils.o utils.o
+	find $(BIN_DIR) -name '*.o' -type f -delete
+	rm -f $(BIN_DIR)/main $(BIN_DIR)/log.txt
+
