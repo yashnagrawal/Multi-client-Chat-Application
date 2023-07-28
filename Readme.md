@@ -24,11 +24,11 @@ The `main` executable can be run with different options to start the server or c
 
 To run the server, execute the `main` executable with the following command:
 
-./bin/main s <port>
+`./bin/main s <port>`
 
 Replace `<port>` with the desired port number to listen on for incoming client connections. For example:
 
-./bin/main s 8080
+`./bin/main s 8080`
 
 The server will start and listen for incoming client connections on the specified port.
 
@@ -36,11 +36,11 @@ The server will start and listen for incoming client connections on the specifie
 
 To run the client, execute the `main` executable with the following command:
 
-./bin/main c <ip_address> <port>
+`./bin/main c <ip_address> <port>`
 
 Replace `<ip_address>` with the IP address of the server to connect to, and `<port>` with the port number on which the server is listening. For example:
 
-./bin/main c 127.0.0.1 8080
+`./bin/main c 127.0.0.1 8080`
 
 The client will connect to the server using the provided IP address and port number.
 
@@ -48,7 +48,7 @@ The client will connect to the server using the provided IP address and port num
 
 To remove the compiled files and clean up the directory, use the following command:
 
-make clean
+`make clean`
 
 ## Additional Notes:
 
