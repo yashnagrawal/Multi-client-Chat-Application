@@ -8,7 +8,11 @@ The C Socket Programming code includes two main programs: `server` and `client`.
 To compile and run the C Socket Programming code, you need to have the following installed on your system:
 
 1. GCC Compiler: Make sure you have the GNU Compiler Collection (GCC) installed to compile the C code.
-   @@ -15,10 +16,12 @@ make
+
+Compiling the Code:
+To compile the code, a `Makefile` has been provided in the repository. Open your terminal or command prompt and navigate to the directory containing the source files and the Makefile. Then, use the following command:
+
+make
 
 This will compile the source files and generate the executable named `main`.
 
@@ -21,7 +25,10 @@ The `main` executable can be run with different options to start the server or c
 To run the server, execute the `main` executable with the following command:
 
 ./bin/main s <port>
-@@ -29,7 +32,8 @@ Replace `<port>` with the desired port number to listen on for incoming client c
+
+Replace `<port>` with the desired port number to listen on for incoming client connections. For example:
+
+./bin/main s 8080
 
 The server will start and listen for incoming client connections on the specified port.
 
@@ -30,7 +37,10 @@ The server will start and listen for incoming client connections on the specifie
 To run the client, execute the `main` executable with the following command:
 
 ./bin/main c <ip_address> <port>
-@@ -40,12 +44,13 @@ Replace `<ip_address>` with the IP address of the server to connect to, and `<po
+
+Replace `<ip_address>` with the IP address of the server to connect to, and `<port>` with the port number on which the server is listening. For example:
+
+./bin/main c 127.0.0.1 8080
 
 The client will connect to the server using the provided IP address and port number.
 
