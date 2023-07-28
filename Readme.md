@@ -1,6 +1,7 @@
-## Multi Client Chat Application using c socket programming
+# Multi Client Chat Application using c socket programming
 
-Overview:
+## Overview:
+
 The C Socket Programming code includes two main programs: `server` and `client`. The server program listens for incoming client connections, while the client program connects to the server to exchange messages. The communication is achieved through sockets, and the programs use pthreads for handling multiple clients simultaneously.
 
 ## Prerequisites:
@@ -12,7 +13,7 @@ To compile and run the C Socket Programming code, you need to have the following
 Compiling the Code:
 To compile the code, a `Makefile` has been provided in the repository. Open your terminal or command prompt and navigate to the directory containing the source files and the Makefile. Then, use the following command:
 
-make
+`make`
 
 This will compile the source files and generate the executable named `main`.
 
@@ -20,7 +21,7 @@ This will compile the source files and generate the executable named `main`.
 
 The `main` executable can be run with different options to start the server or client program.
 
-## Running the Server:
+### Running the Server:
 
 To run the server, execute the `main` executable with the following command:
 
@@ -32,7 +33,7 @@ Replace `<port>` with the desired port number to listen on for incoming client c
 
 The server will start and listen for incoming client connections on the specified port.
 
-## Running the Client:
+### Running the Client:
 
 To run the client, execute the `main` executable with the following command:
 
