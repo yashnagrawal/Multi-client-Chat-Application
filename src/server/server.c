@@ -5,7 +5,6 @@
 #include "utils.h"
 
 extern int client_count;
-pthread_mutex_t file_lock;
 
 extern int client_sockets[MAX_CLIENTS];
 extern char *client_usernames[MAX_CLIENTS];

@@ -2,13 +2,21 @@
 #define UTILS_H
 
 #define MAX_CLIENTS 20
+#define no_of_alphabets 256
+
+typedef struct TrieNode
+{
+    struct TrieNode *children[no_of_alphabets];
+
+    int socket_no;
+} TrieNode;
 
 int client_socket_setup(char *ip_address, int port);
 int server_socket_setup(int port);
 int client_acceptor(int socket_binding);
 void *client_handler(void *arg);
-void mesg_command_handler(char *msg, int client_index);
-int recv_username_and_store(int socket_com);
+void mesg_command_handler(char *msg, char *client_username);
+char *recv_username_and_store(int socket_com);
 pthread_t create_thread(int socket_com);
 
 char *get_ipaddress_from_socket(int socket_com);

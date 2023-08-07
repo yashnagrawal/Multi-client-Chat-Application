@@ -8,6 +8,10 @@
 #include <pthread.h>
 #include <unistd.h>
 #include "utils.h"
+#include "trie.c"
+
+TrieNode *root;
+pthread_mutex_t file_lock;
 
 int client_sockets[MAX_CLIENTS];
 char *client_usernames[MAX_CLIENTS];
@@ -15,11 +19,48 @@ char *client_usernames[MAX_CLIENTS];
 char *log_file = "bin/log.txt";
 int client_count = 0;
 
+TrieNode *getTrieNode()
+{
+    TrieNode *root = (TrieNode *)malloc(sizeof(TrieNode));
+    for (int i = 0; i < no_of_alphabets; i++)
+    {
+        root->children[i] = NULL;
+    }
+    root->socket_no = -1;
+    return root;
+}
+
+void insert(TrieNode *root, char *str, int n, int socket_no)
+{
+    TrieNode *curr_node = root;
+    for (int i = 0; i < n; i++)
+    {
+        if (curr_node->children[str[i]] == NULL)
+        {
+            curr_node->children[str[i]] = getTrieNode();
+        }
+        curr_node = curr_node->children[str[i]];
+    }
+    curr_node->socket_no = socket_no;
+}
+
+int isStringPresent(TrieNode *root, char *str, int n)
+{
+    TrieNode *curr_node = root;
+    for (int i = 0; i < n; i++)
+    {
+        if (curr_node->children[str[i]] == NULL)
+            return -1;
+        curr_node = curr_node->children[str[i]];
+    }
+    return curr_node->socket_no;
+}
+
 void *client_handler(void *arg)
 {
     int socket_com = *(int *)arg;
 
-    int client_index = recv_username_and_store(socket_com);
+    char *client_username = recv_username_and_store(socket_com);
 
     printf("Client count: %d\n", client_count);
 
@@ -29,17 +70,15 @@ void *client_handler(void *arg)
         if (strcmp(msg, "EXIT\n") == 0)
         {
             client_count--;
-            printf("Client %s disconnected\n", client_usernames[client_index]);
+            printf("Client %s disconnected\n", client_username);
             printf("Client count: %d\n", client_count);
-            client_sockets[client_index] = 0;
-            free(client_usernames[client_index]);
             close(socket_com);
             return NULL;
         }
 
         if (strncmp(msg, "MESG", 4) == 0)
         {
-            mesg_command_handler(msg, client_index);
+            mesg_command_handler(msg, client_username);
             continue;
         }
     }
@@ -48,7 +87,7 @@ void *client_handler(void *arg)
 }
 
 // function to handle MESG command in client_handler
-void mesg_command_handler(char *msg, int client_index)
+void mesg_command_handler(char *msg, char *client_username)
 {
     char *username, *message, *msg_to_send;
     msg_to_send = (char *)malloc(1024 * sizeof(char));
@@ -71,32 +110,26 @@ void mesg_command_handler(char *msg, int client_index)
         return;
     }
 
-    int receiver_index = -1;
+    int receiver_socket = isStringPresent(root, username, strlen(username));
 
-    for (int i = 0; i < MAX_CLIENTS; i++)
+    if (receiver_socket == -1)
     {
-        if (client_usernames[i] == NULL)
-            continue;
-        if (strcmp(client_usernames[i], username) == 0)
-        {
-            receiver_index = i;
-        }
-    }
-
-    if (receiver_index == -1)
-    {
-        printf("Invalid username request from %s\n", client_usernames[client_index]);
+        printf("Invalid username request from %s\n", client_username);
+        return;
     }
 
     // add /0 to message
     message[strlen(message) - 1] = '\0';
 
     msg_to_send = strcat(msg_to_send, "MESG ");
-    msg_to_send = strcat(msg_to_send, client_usernames[client_index]);
+    msg_to_send = strcat(msg_to_send, client_username);
     msg_to_send = strcat(msg_to_send, " ");
     msg_to_send = strcat(msg_to_send, message);
 
-    send_msg(client_sockets[receiver_index], msg_to_send);
+    send_msg(receiver_socket, msg_to_send);
+
+    // lock file
+    pthread_mutex_lock(&file_lock);
 
     FILE *fp = fopen(log_file, "a");
 
@@ -105,16 +138,19 @@ void mesg_command_handler(char *msg, int client_index)
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
     fprintf(fp, "%d-%02d-%02d %02d:%02d:%02d FROM: %s TO: %s MESG: %s\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour,
-            tm.tm_min, tm.tm_sec, client_usernames[client_index], client_usernames[receiver_index], message);
+            tm.tm_min, tm.tm_sec, client_username, username, message);
 
     // print to stdout
     printf("%d-%02d-%02d %02d:%02d:%02d FROM: %s TO: %s MESG: %s\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour,
-           tm.tm_min, tm.tm_sec, client_usernames[client_index], client_usernames[receiver_index], message);
+           tm.tm_min, tm.tm_sec, client_username, username, message);
 
     fclose(fp);
+
+    // unlock file
+    pthread_mutex_unlock(&file_lock);
 }
 
-int recv_username_and_store(int socket_com)
+char *recv_username_and_store(int socket_com)
 {
     // Receive response and note down client's socket details
     char *client_username = recv_msg(socket_com);
@@ -123,20 +159,14 @@ int recv_username_and_store(int socket_com)
     client_username[strlen(client_username) - 1] = '\0';
     client_count++;
 
+    if (root == NULL)
+        root = getTrieNode();
+
+    insert(root, client_username, strlen(client_username), socket_com);
+
     printf("Client %s connected\n", client_username);
 
-    for (int i = 0; i < MAX_CLIENTS; i++)
-    {
-        if (client_sockets[i] == 0)
-        {
-            client_sockets[i] = socket_com;
-
-            client_usernames[i] = client_username;
-            return i;
-        }
-    }
-
-    return -1;
+    return client_username;
 }
 
 pthread_t create_thread(int socket_com)
