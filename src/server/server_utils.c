@@ -8,7 +8,6 @@
 #include <pthread.h>
 #include <unistd.h>
 #include "utils.h"
-#include "trie.c"
 
 TrieNode *root;
 pthread_mutex_t file_lock;
@@ -44,7 +43,7 @@ void insert(TrieNode *root, char *str, int n, int socket_no)
     curr_node->socket_no = socket_no;
 }
 
-int isStringPresent(TrieNode *root, char *str, int n)
+int getSocketNumber(TrieNode *root, char *str, int n)
 {
     TrieNode *curr_node = root;
     for (int i = 0; i < n; i++)
@@ -54,6 +53,18 @@ int isStringPresent(TrieNode *root, char *str, int n)
         curr_node = curr_node->children[str[i]];
     }
     return curr_node->socket_no;
+}
+
+void delete(TrieNode *root, char *str, int n)
+{
+    TrieNode *curr_node = root;
+    for (int i = 0; i < n; i++)
+    {
+        if (curr_node->children[str[i]] == NULL)
+            return;
+        curr_node = curr_node->children[str[i]];
+    }
+    curr_node->socket_no = -1;
 }
 
 void *client_handler(void *arg)
@@ -72,6 +83,7 @@ void *client_handler(void *arg)
             client_count--;
             printf("Client %s disconnected\n", client_username);
             printf("Client count: %d\n", client_count);
+            delete (root, client_username, strlen(client_username));
             close(socket_com);
             return NULL;
         }
@@ -100,8 +112,6 @@ void mesg_command_handler(char *msg, char *client_username)
     }
 
     username = strtok(NULL, " ");
-    // add /0 to username
-    // username[strlen(username) - 1] = '\0';
 
     message = strtok(NULL, "");
     if (username == NULL || message == NULL)
@@ -110,7 +120,7 @@ void mesg_command_handler(char *msg, char *client_username)
         return;
     }
 
-    int receiver_socket = isStringPresent(root, username, strlen(username));
+    int receiver_socket = getSocketNumber(root, username, strlen(username));
 
     if (receiver_socket == -1)
     {
