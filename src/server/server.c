@@ -6,20 +6,10 @@
 
 extern int client_count;
 
-extern int client_sockets[MAX_CLIENTS];
-extern char *client_usernames[MAX_CLIENTS];
-
 void *client_handler(void *arg);
 
 void server(int port)
 {
-
-    for (int i = 0; i < MAX_CLIENTS; i++)
-    {
-        client_sockets[i] = 0;
-        client_usernames[i] = NULL;
-    }
-
     int socket_binding = server_socket_setup(port);
 
     while (1)

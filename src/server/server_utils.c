@@ -12,9 +12,6 @@
 TrieNode *root;
 pthread_mutex_t file_lock;
 
-int client_sockets[MAX_CLIENTS];
-char *client_usernames[MAX_CLIENTS];
-
 char *log_file = "bin/log.txt";
 int client_count = 0;
 
@@ -212,11 +209,6 @@ int server_socket_setup(int port)
 {
     int socket_binding;
     struct sockaddr_in server_add;
-
-    for (int i = 0; i < MAX_CLIENTS; i++)
-    {
-        client_sockets[i] = 0;
-    }
 
     // Creating server socket
     socket_binding = socket(AF_INET, SOCK_STREAM, 0);
